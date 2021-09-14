@@ -26,19 +26,24 @@ public class Transaction implements TransactionInterface{
 			String balanceQuery = "SELECT balance FROM user_data WHERE pin = ?";
 			
 			PreparedStatement ps1 = connection.prepareStatement(balanceQuery);
-			
+
 			ps1.setString(1, pin);
+			
 			
 			ResultSet rs = ps1.executeQuery();
 			
 			status1 = true;
 			
-			int balance = rs.getInt("balance");
+			int balance = 0;
+			int newBalance = 0;
 			
-			int newBalance = (balance - amount);
+			while(rs.next()) {
+				 balance = rs.getInt("balance");
+				 newBalance = (balance - amount);
+			}
 			
 			String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, "
-					+ "transfer_target, balance_origin, balance_target, approved "
+					+ "transfer_target, balance_origin, balance_target, approved) "
 					+ "VALUES('withdrawl', ?, ?, ?, ?, false)";
 			
 			PreparedStatement ps2 = connection.prepareStatement(inputQuery);
@@ -52,13 +57,12 @@ public class Transaction implements TransactionInterface{
 			
 			status2 = true;
 			
-			String balanceUpdate = "UPDATE TABLE user_data SET balance = ? WHERE id = ? ";
+			String balanceUpdate = "UPDATE user_data SET balance = ? WHERE pin = ? ";
 			
 			PreparedStatement ps3 = connection.prepareStatement(balanceUpdate);
 			
 			ps3.setInt(1, newBalance);
 			ps3.setString(2, pin);
-			
 			
 			ps3.execute();
 			
