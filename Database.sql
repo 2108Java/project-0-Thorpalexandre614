@@ -15,8 +15,7 @@ create table transaction_log(
 	transfer_origin varchar(4),
 	transfer_target varchar(4), 
 	--if the transaction is withdrawl or deposit, then origin and target are the same pin
-	balance_origin int,
-	balance_target int,
+	amount int not null,
 	approved bool not null 
 
 	);
