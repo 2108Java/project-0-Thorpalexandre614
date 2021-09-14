@@ -6,16 +6,88 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class Transaction implements TransactionInterface{
+import com.revature.classes.User;
+
+public class BankImp implements BankDAO {
 	
 	String server = "localhost";
 	String url = "jdbc:postgresql://" + server + "/postgres";
 	String username = "postgres";
 	String password = "Sixfourteen614";
-	
-	
-	public boolean withdraw(int amount, String pin) {
 
+	@Override
+	public boolean addUser(User newUser) {
+		// TODO Auto-generated method stub
+boolean status = false;
+		
+		try(Connection connection = DriverManager.getConnection(url,username,password)){
+			
+			String addUser = "INSERT INTO user_data VALUES(?, ?, ?, ?, ?)";
+			
+			PreparedStatement ps = connection.prepareStatement(addUser);
+			
+			ps.setString(1, newUser.getPin());
+			ps.setString(2, newUser.getUser());
+			ps.setString(3, newUser.getPass());
+			ps.setInt(4, newUser.getBalance());
+			ps.setBoolean(5, newUser.getEmployee());
+			
+			ps.execute();
+			
+			status = true;
+			
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return status;
+	}
+
+	@Override
+	public boolean openAccount(int openingBalance, int pin) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int readBalance(int pin) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String retrieveLog(int transactionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String retrieveAccountInfo(int pin) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean changeUsername(String username) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean changePassword(String password) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean makeEmployee(String username) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean withdraw(int amount, String pin) {
+		// TODO Auto-generated method stub
 		boolean status1 = false;
 		boolean status2 = false;
 		boolean status3 = false;
@@ -77,11 +149,12 @@ public class Transaction implements TransactionInterface{
 		}
 		
 		return statusFinal;
+
 	}
 
-	
+	@Override
 	public boolean deposit(int amount, String pin) {
-		
+		// TODO Auto-generated method stub
 		boolean status1 = false;
 		boolean status2 = false;
 		boolean status3 = false;
@@ -144,9 +217,9 @@ public class Transaction implements TransactionInterface{
 		return statusFinal;
 	}
 
-	
+	@Override
 	public boolean transfer(int amount, String transferOrigin, String transferTarget) {
-		
+		// TODO Auto-generated method stub
 		boolean status1 = false;
 		boolean status2 = false;
 		boolean status3 = false;
@@ -187,7 +260,7 @@ public class Transaction implements TransactionInterface{
 			status1 = true;
 			
 			String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, transfer_target, amount, approved) "
-					+ "VALUES('withdrawl', ?, ?, ?, false)";
+					+ "VALUES('transfer', ?, ?, ?, false)";
 			
 			PreparedStatement ps3 = connection.prepareStatement(inputQuery);
 			
@@ -228,6 +301,18 @@ public class Transaction implements TransactionInterface{
 		}
 		
 		return statusFinal;
+	}
+
+	@Override
+	public boolean removeUser(User username) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean closeAccount(User username) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

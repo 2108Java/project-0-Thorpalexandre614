@@ -2,9 +2,10 @@ package com.revature.classes;
 
 public class User {
 	
-	private int pin;
+	private String pin;
 	private String username;
 	private String password;
+	private int balance;
 	private boolean isEmployee;
 	//Constructors by username and password or by PIN
 	
@@ -16,13 +17,13 @@ public class User {
 		this.password = password;
 		this.isEmployee = false;
 	}
-	public User(int pin) {
+	public User(String pin) {
 		this.pin = pin;
 	}
 	
 	//Getters
 	
-	public int getPin() {
+	public String getPin() {
 		return this.pin;
 	}
 	
@@ -34,12 +35,16 @@ public class User {
 		return this.password;
 	}
 	
+	public int getBalance() {
+		return this.balance;
+	}
+	
 	public boolean getEmployee() {
 		return this.isEmployee;
 	}
 	//Setters
 	
-	public void setPin(int pin) {
+	public void setPin(String pin) {
 		this.pin = pin;
 	}
 	
@@ -49,6 +54,10 @@ public class User {
 	
 	public void setPass(String password) {
 		this.password = password;
+	}
+	
+	public void setBalance(int balance) {
+		this.balance = balance;
 	}
 	
 	public void setEmployee(boolean isEmployee) {

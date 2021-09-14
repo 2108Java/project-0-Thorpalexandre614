@@ -1,6 +1,6 @@
 package com.revature.repo;
 
-import com.revature.classes.TransactionObject;
+
 import com.revature.classes.User;
 
 public interface BankDAO {
@@ -8,7 +8,6 @@ public interface BankDAO {
 	//CREATE
 	
 	public boolean addUser(User newUser);
-	public boolean logTransaction(TransactionObject transaction);
 	public boolean openAccount(int openingBalance, int pin);
 	
 	//READ(SELECT)
@@ -24,6 +23,10 @@ public interface BankDAO {
 	public boolean changeUsername(String username);
 	public boolean changePassword(String password);
 	public boolean makeEmployee(String username);
+	
+	public boolean withdraw(int amount, String pin);
+	public boolean deposit(int amount, String pin);
+	public boolean transfer(int amount, String transferOrigin, String transferTarget);
 	
 	//DELETE
 	
