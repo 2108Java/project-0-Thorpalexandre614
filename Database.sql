@@ -1,10 +1,11 @@
 create table user_data(
 	
-	pin varchar(4) primary key,
+	pin varchar(4) not null,
 	username varchar(10) not null,
 	pass varchar(20) not null,
 	balance int,
-	account_type varchar(10) default 'checking'
+	account_type varchar(10) default 'checking',
+	approved bool default false
 	--account_type checking, savings, employee
 );
 
@@ -12,12 +13,14 @@ create table transaction_log(
 
 	transaction_id serial primary key,
 	transaction_type varchar(10) not null,
-	--only one of the three can be not null for a given transaction
-	transfer_origin varchar(4),
-	transfer_target varchar(4), 
+	--transfer origin and target are the pins and account origin and target are the account types
+	transfer_origin varchar(10),
+	account_origin varchar(10),
+	transfer_target varchar(10),
+	account_target varchar(10),
 	--if the transaction is withdrawl or deposit, then origin and target are the same pin
 	amount int not null,
-	approved bool not null 
+	approved bool default false 
 
 	);
 
@@ -33,5 +36,3 @@ drop table user_data;
 drop table transaction_log;
 truncate user_data;
 truncate transaction_log;
-
-insert into user_data values('1234', 'User1', 'password', 100, false);

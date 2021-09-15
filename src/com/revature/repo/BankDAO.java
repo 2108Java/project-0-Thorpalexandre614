@@ -8,7 +8,7 @@ public interface BankDAO {
 	//CREATE
 	
 	public boolean addUser(User newUser);
-	public boolean openAccount(int openingBalance, String pin);
+	public boolean openSavings(int openingBalance, String pin);
 	
 	//READ(SELECT)
 	
@@ -22,11 +22,13 @@ public interface BankDAO {
 	
 	public boolean changeUsername(String username);
 	public boolean changePassword(String password);
+	public boolean approveUser(String pin);
 	public boolean makeEmployee(String username);
 	
-	public boolean withdraw(int amount, String pin) throws InsufficientFundsException;
-	public boolean deposit(int amount, String pin);
-	public boolean transfer(int amount, String transferOrigin, String transferTarget) throws InsufficientFundsException;
+	public boolean withdraw(int amount, String pin, String accountOrigin) throws InsufficientFundsException;
+	public boolean deposit(int amount, String pin,String accountTarget);
+	public boolean internalTransfer(int amount, String pin, String accountOrigin, String accountTarget) throws InsufficientFundsException;
+	public boolean externalTransfer(int amount, String pinOrigin, String pinTarget, String accountOrigin, String accountTarget) throws InsufficientFundsException;
 	
 	//DELETE
 	
