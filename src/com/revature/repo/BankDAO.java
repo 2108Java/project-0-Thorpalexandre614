@@ -8,13 +8,13 @@ public interface BankDAO {
 	//CREATE
 	
 	public boolean addUser(User newUser);
-	public boolean openAccount(int openingBalance, int pin);
+	public boolean openAccount(int openingBalance, String pin);
 	
 	//READ(SELECT)
 	
-	public int readBalance(int pin);
+	public int readBalance(String pin);
 	public String retrieveLog(int transactionId);
-	public String retrieveAccountInfo(int pin);
+	public String retrieveAccountInfo(String pin);
 	//public ? retrieveTransactionId(? timestamp);
 	
 	
@@ -24,9 +24,9 @@ public interface BankDAO {
 	public boolean changePassword(String password);
 	public boolean makeEmployee(String username);
 	
-	public boolean withdraw(int amount, String pin);
+	public boolean withdraw(int amount, String pin) throws InsufficientFundsException;
 	public boolean deposit(int amount, String pin);
-	public boolean transfer(int amount, String transferOrigin, String transferTarget);
+	public boolean transfer(int amount, String transferOrigin, String transferTarget) throws InsufficientFundsException;
 	
 	//DELETE
 	

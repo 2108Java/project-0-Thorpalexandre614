@@ -6,20 +6,19 @@ public class User {
 	private String username;
 	private String password;
 	private int balance;
-	private boolean isEmployee;
+	private String accountType;
 	//Constructors by username and password or by PIN
 	
 	public User() {
 		
 	}
-	public User(String username, String password) {
+	public User(String pin, String username, String password, String type) {
 		this.username = username;
 		this.password = password;
-		this.isEmployee = false;
-	}
-	public User(String pin) {
+		this.accountType = type;
 		this.pin = pin;
 	}
+	
 	
 	//Getters
 	
@@ -39,8 +38,8 @@ public class User {
 		return this.balance;
 	}
 	
-	public boolean getEmployee() {
-		return this.isEmployee;
+	public String getType() {
+		return this.accountType;
 	}
 	//Setters
 	
@@ -60,9 +59,12 @@ public class User {
 		this.balance = balance;
 	}
 	
-	public void setEmployee(boolean isEmployee) {
-		this.isEmployee = isEmployee;
+	public void setType(String accountType) {
+		this.accountType = accountType;
 	}
+	
+	
+	
 	
 	
 

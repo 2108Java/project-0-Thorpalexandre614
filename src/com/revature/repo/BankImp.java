@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import com.revature.classes.User;
 
 public class BankImp implements BankDAO {
@@ -18,7 +17,7 @@ public class BankImp implements BankDAO {
 	@Override
 	public boolean addUser(User newUser) {
 		// TODO Auto-generated method stub
-boolean status = false;
+		boolean status = false;
 		
 		try(Connection connection = DriverManager.getConnection(url,username,password)){
 			
@@ -30,7 +29,7 @@ boolean status = false;
 			ps.setString(2, newUser.getUser());
 			ps.setString(3, newUser.getPass());
 			ps.setInt(4, newUser.getBalance());
-			ps.setBoolean(5, newUser.getEmployee());
+			ps.setString(5, newUser.getType());
 			
 			ps.execute();
 			
@@ -44,13 +43,46 @@ boolean status = false;
 	}
 
 	@Override
-	public boolean openAccount(int openingBalance, int pin) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean openAccount(int openingBalance, String pin) {
+		boolean status1 = false;
+		
+		boolean statusFinal = false;
+		
+		try(Connection connection = DriverManager.getConnection(url,username,password)){
+			
+			//Check if the user has an account already before they can make another
+			
+			String checkPin = "SELECT is_employee FROM user_data WHERE pin = ?";
+			
+			PreparedStatement ps1 = connection.prepareStatement(checkPin);
+			
+			ps1.setString(1, pin);
+			
+			ResultSet rs = ps1.executeQuery();
+			
+			while(rs.next()) {
+				boolean employeeCheck = rs.getBoolean("is_employee");
+				if(!employeeCheck) {
+					status1 = true;
+				}
+			}
+			
+			if(status1) {
+				
+				String openAccount = "INSERT INTO user_data VALUES()";
+				
+			}
+
+			
+		} catch (SQLException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		return statusFinal;
 	}
 
 	@Override
-	public int readBalance(int pin) {
+	public int readBalance(String pin) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
@@ -62,7 +94,7 @@ boolean status = false;
 	}
 
 	@Override
-	public String retrieveAccountInfo(int pin) {
+	public String retrieveAccountInfo(String pin) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -86,7 +118,7 @@ boolean status = false;
 	}
 
 	@Override
-	public boolean withdraw(int amount, String pin) {
+	public boolean withdraw(int amount, String pin) throws InsufficientFundsException {
 		// TODO Auto-generated method stub
 		boolean status1 = false;
 		boolean status2 = false;
@@ -94,6 +126,8 @@ boolean status = false;
 		boolean statusFinal = false;
 		
 		try(Connection connection = DriverManager.getConnection(url, username, password)){
+			
+			//Select the balance by the user pin and check if there are sufficient funds 
 			
 			String balanceQuery = "SELECT balance FROM user_data WHERE pin = ?";
 			
@@ -104,15 +138,21 @@ boolean status = false;
 			
 			ResultSet rs = ps1.executeQuery();
 			
-			status1 = true;
-			
 			int balance = 0;
 			int newBalance = 0;
 			
 			while(rs.next()) {
 				 balance = rs.getInt("balance");
-				 newBalance = (balance - amount);
+				 if(balance > amount) {
+					 newBalance = (balance - amount);
+					 status1 = true;
+				 }else {
+					 throw new InsufficientFundsException("Insuficient funds.");
+				 }
+				 
 			}
+			
+			//Log the transaction in the transaction log
 			
 			String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, "
 					+ "transfer_target, amount, approved) "
@@ -218,7 +258,7 @@ boolean status = false;
 	}
 
 	@Override
-	public boolean transfer(int amount, String transferOrigin, String transferTarget) {
+	public boolean transfer(int amount, String transferOrigin, String transferTarget) throws InsufficientFundsException {
 		// TODO Auto-generated method stub
 		boolean status1 = false;
 		boolean status2 = false;
@@ -249,8 +289,15 @@ boolean status = false;
 			int newBalanceTarget = 0;
 			
 			while(rs1.next()) {
-				 balanceOrigin = rs1.getInt("balance");
-				 newBalanceOrigin = balanceOrigin - amount;
+				
+				balanceOrigin = rs1.getInt("balance");
+				if(balanceOrigin > amount) {
+					newBalanceOrigin = balanceOrigin - amount;
+				}else {
+					throw new InsufficientFundsException("Insufficient Funds.");
+				}
+				 
+				 
 			}
 			while(rs2.next()) {
 				 balanceTarget = rs2.getInt("balance");

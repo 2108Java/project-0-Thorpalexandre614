@@ -3,8 +3,9 @@ create table user_data(
 	pin varchar(4) primary key,
 	username varchar(10) not null,
 	pass varchar(20) not null,
-	balance int not null,
-	is_employee bool not null
+	balance int,
+	account_type varchar(10) default 'checking'
+	--account_type checking, savings, employee
 );
 
 create table transaction_log(
