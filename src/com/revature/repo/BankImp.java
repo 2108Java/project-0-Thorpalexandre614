@@ -96,11 +96,38 @@ public class BankImp implements BankDAO {
 		}
 		return statusFinal;
 	}
-
+	
 	@Override
-	public int readBalance(String pin) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int checkBalance(String pin) {
+		
+		int displayBalance = 0;
+		boolean approved = false;
+		
+		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+			
+			String checkBalance = "SELECT balance, approved FROM user_data WHERE pin = ?";
+			
+			PreparedStatement ps = connection.prepareStatement(checkBalance);
+			
+			ps.setString(1, pin);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			while(rs.next()) {
+				displayBalance = rs.getInt("balance");
+				approved = rs.getBoolean("approved");
+			}
+			
+			if(!approved) {
+				System.out.println("Opening balance displayed but account has not been approved.");
+			}
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return displayBalance;
 	}
 
 	@Override
@@ -114,7 +141,6 @@ public class BankImp implements BankDAO {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 	@Override
 	public boolean changeUsername(String username) {
 		// TODO Auto-generated method stub
@@ -299,13 +325,118 @@ public class BankImp implements BankDAO {
 	
 	@Override
 	public boolean internalTransfer(int amount, String pin, String accountOrigin, String accountTarget){
+
+		boolean status1 = false;
+		boolean status2 = false;
+		boolean status3 = false;
+		boolean statusFinal = false;
 		
-		return false;
+		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
+			
+			String balanceQueryOrigin = "SELECT balance, approved FROM user_data WHERE pin = ? AND account_type = ?";
+			
+			PreparedStatement ps1 = connection.prepareStatement(balanceQueryOrigin);
+
+			ps1.setString(1, pin);
+			ps1.setString(2, accountOrigin);
+			
+			ResultSet rs1 = ps1.executeQuery();
+			
+			String balanceQueryTarget = "SELECT balance, approved FROM user_data WHERE pin = ? AND account_type = ?";
+			
+			PreparedStatement ps2 = connection.prepareStatement(balanceQueryTarget);
+
+			ps2.setString(1, pin);
+			ps2.setString(2, accountTarget);
+			
+			ResultSet rs2 = ps2.executeQuery();
+			
+			int balanceOrigin = 0;
+			int balanceTarget = 0;
+			int newBalanceOrigin = 0;
+			int newBalanceTarget = 0;
+			boolean originApproved = false;
+			boolean targetApproved = false;
+			
+			while(rs1.next()) {
+				
+				balanceOrigin = rs1.getInt("balance");
+				originApproved = rs1.getBoolean("approved");
+				
+					//throw new InsufficientFundsException("Insufficient Funds.");
+			}
+			while(rs2.next()) {
+				 balanceTarget = rs2.getInt("balance");
+				 targetApproved = rs2.getBoolean("approved");
+			}
+			
+			if(originApproved && targetApproved) {
+				if(balanceOrigin >= amount) {
+					newBalanceOrigin = balanceOrigin - amount;
+					newBalanceTarget = balanceTarget + amount;
+				}else {
+						System.out.println("Insufficient funds.");
+				}
+				
+				
+				status1 = true;
+				
+				String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, "
+						+ "account_origin, transfer_target, account_target, amount, approved) "
+						+ "VALUES('internal transfer', ?, ?, ?, ?, ?, false)";
+				
+				PreparedStatement ps3 = connection.prepareStatement(inputQuery);
+				
+				ps3.setString(1, pin);
+				ps3.setString(2, accountOrigin);
+				ps3.setString(3, pin);
+				ps3.setString(4, accountTarget);
+				ps3.setInt(5, amount);
+				
+				ps3.execute();
+				
+				status2 = true;
+				
+				String balanceUpdateOrigin = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
+				
+				PreparedStatement ps4 = connection.prepareStatement(balanceUpdateOrigin);
+				
+				ps4.setInt(1, newBalanceOrigin);
+				ps4.setString(2, pin);
+				ps4.setString(3, accountOrigin);
+				
+				ps4.execute();
+				
+				String balanceUpdateTarget = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
+				
+				PreparedStatement ps5 = connection.prepareStatement(balanceUpdateTarget);
+				
+				ps5.setInt(1, newBalanceTarget);
+				ps5.setString(2, pin);
+				ps5.setString(3, accountTarget);
+				
+				ps5.execute();
+				
+				status3 = true;
+			}else {
+				System.out.println("Account has not been approved.");
+			}
+			
+			
+			if(status1 && status2 && status3) {
+				statusFinal = true;
+			}
+			
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return statusFinal;
 	}
 
 	@Override
 	public boolean externalTransfer(int amount, String pinOrigin, String accountOrigin, String pinTarget, String accountTarget) {
-		// TODO Auto-generated method stub
+		
 		boolean status1 = false;
 		boolean status2 = false;
 		boolean status3 = false;
@@ -363,7 +494,7 @@ public class BankImp implements BankDAO {
 				
 				String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, "
 						+ "account_origin, transfer_target, account_target, amount, approved) "
-						+ "VALUES('transfer', ?, ?, ?, ?, ?, false)";
+						+ "VALUES('external transfer', ?, ?, ?, ?, ?, false)";
 				
 				PreparedStatement ps3 = connection.prepareStatement(inputQuery);
 				
@@ -415,15 +546,27 @@ public class BankImp implements BankDAO {
 	}
 
 	@Override
-	public boolean removeUser(User username) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public boolean closeAccount(User username) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		boolean status = false;
+		
+		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
+			
+			String closeAccount = "DELETE FROM user_data WHERE pin = ?";
+			
+			PreparedStatement ps = connection.prepareStatement(closeAccount);
+			
+			ps.setString(1, username.getPin());
+			
+			ps.execute();		
+			
+			status = true;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return status;
 	}
 
 	@Override

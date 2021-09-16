@@ -18,9 +18,9 @@ public class MainDriver {
 		BankImp bi = new BankImp();
 //		bi.addUser(alex);
 //		bi.approveUser("6141");
-		bi.deposit(100, "6141", "checking");
-		bi.approveUser("1111");
-		bi.externalTransfer(50, "6141", "checking", "1111", "checking");
+//		bi.deposit(100, "6141", "checking");
+//		bi.approveUser("1111");
+//		bi.externalTransfer(50, "6141", "checking", "1111", "checking");
 //		bi.openSavings(100, "6141");
 //		try {
 //			bi.withdraw(50, alex.getPin(), "savings");
@@ -48,7 +48,7 @@ public class MainDriver {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-	
+		bi.closeAccount(rando);
 		
 	}
 

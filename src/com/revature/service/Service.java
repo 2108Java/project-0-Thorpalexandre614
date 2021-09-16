@@ -1,5 +1,7 @@
 package com.revature.service;
 
-public interface Service {
+public class Service implements BankService{
+	
+	
 
 }
