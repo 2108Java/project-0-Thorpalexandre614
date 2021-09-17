@@ -63,13 +63,14 @@ public class BankImp implements BankDAO {
 			
 			String username = null;
 			String password = null;
+			String account = null;
 			boolean approved = false;
 			
 			while(rs.next()) {
 				username = rs.getString("username");
 				password = rs.getString("pass");
-				approved = rs.getBoolean("account_type");
-				
+				account = rs.getString("account_type");
+				approved = rs.getBoolean("approved");
 			}
 			
 			if(approved) {

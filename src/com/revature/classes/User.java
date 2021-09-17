@@ -41,6 +41,7 @@ public class User {
 	public String getType() {
 		return this.accountType;
 	}
+	
 	//Setters
 	
 	public void setPin(String pin) {
