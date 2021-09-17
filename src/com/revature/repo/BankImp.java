@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import com.revature.classes.User;
+import com.revature.service.Service;
 
 public class BankImp implements BankDAO {
 	
@@ -15,154 +16,9 @@ public class BankImp implements BankDAO {
 	String passwordServer = "Sixfourteen614";
 
 	@Override
-	public boolean addUser(User newUser) {
-		// TODO Auto-generated method stub
-		boolean status = false;
-		
-		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
-			
-			String addUser = "INSERT INTO user_data(pin, username, pass, balance, account_type) VALUES(?, ?, ?, ?, ?)";
-			
-			PreparedStatement ps = connection.prepareStatement(addUser);
-			
-			ps.setString(1, newUser.getPin());
-			ps.setString(2, newUser.getUser());
-			ps.setString(3, newUser.getPass());
-			ps.setInt(4, newUser.getBalance());
-			ps.setString(5, newUser.getType());
-			
-			ps.execute();
-			
-			status = true;
-			
-		} catch(SQLException e) {
-			e.printStackTrace();
-		}
-		
-		return status;
-	}
-
-	@Override
-	public boolean openSavings(int openingBalance, String pin) {
-		boolean status1 = false;
-		
-		boolean statusFinal = false;
-		
-		
-		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
-			
-			//Check if the user has an account already before they can make another
-			
-			String checkPin = "SELECT * FROM user_data WHERE pin = ?";
-			
-			PreparedStatement ps1 = connection.prepareStatement(checkPin);
-			
-			ps1.setString(1, pin);
-			
-			ResultSet rs = ps1.executeQuery();
-			
-			String username = null;
-			String password = null;
-			String account = null;
-			boolean approved = false;
-			
-			while(rs.next()) {
-				username = rs.getString("username");
-				password = rs.getString("pass");
-				account = rs.getString("account_type");
-				approved = rs.getBoolean("approved");
-			}
-			
-			if(approved) {
-				
-		
-				String openAccount = "INSERT INTO user_data(pin, username, pass, balance, account_type) VALUES(?,?,?,?,'savings')";
-				
-				PreparedStatement ps2 = connection.prepareStatement(openAccount);
-				
-				ps2.setString(1, pin);
-				ps2.setString(2, username);
-				ps2.setString(3, password);
-				ps2.setInt(4, openingBalance);
-				
-				ps2.execute();
-				
-
-			}
-
-			
-		} catch (SQLException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-		return statusFinal;
-	}
-	
-	@Override
-	public int checkBalance(String pin) {
-		
-		int displayBalance = 0;
-		boolean approved = false;
-		
-		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
-			
-			String checkBalance = "SELECT balance, approved FROM user_data WHERE pin = ?";
-			
-			PreparedStatement ps = connection.prepareStatement(checkBalance);
-			
-			ps.setString(1, pin);
-			
-			ResultSet rs = ps.executeQuery();
-			
-			while(rs.next()) {
-				displayBalance = rs.getInt("balance");
-				approved = rs.getBoolean("approved");
-			}
-			
-			if(!approved) {
-				System.out.println("Opening balance displayed but account has not been approved.");
-			}
-			
-			
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return displayBalance;
-	}
-
-	@Override
-	public String retrieveLog(int transactionId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String retrieveAccountInfo(String pin) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	@Override
-	public boolean changeUsername(String username) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean changePassword(String password) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean makeEmployee(String username) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public boolean withdraw(int amount, String pin, String accountOrigin) {
-		// TODO Auto-generated method stub
+
+		Service check = new Service();
 		boolean status1 = false;
 		boolean status2 = false;
 		boolean status3 = false;
@@ -170,41 +26,25 @@ public class BankImp implements BankDAO {
 		
 		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
 			
-			//Select the balance by the user pin and check if there are sufficient funds 
-			//Also check if account has been approved
+			int balance = check.checkBalance(pin, accountOrigin);
+			boolean approved = check.checkAccountStatus(pin, accountOrigin);
 			
-			String balanceQuery = "SELECT balance, approved FROM user_data WHERE pin = ? AND account_type = ?";
-			
-			PreparedStatement ps1 = connection.prepareStatement(balanceQuery);
-
-			ps1.setString(1, pin);
-			ps1.setString(2, accountOrigin);
-			
-			
-			ResultSet rs = ps1.executeQuery();
-			
-			int balance = 0;
 			int newBalance = 0;
-			boolean approved = false;
 			
-			while(rs.next()) {
-				 balance = rs.getInt("balance");
-				 approved = rs.getBoolean("approved"); 
-				 
+			if(approved) {
 				if(balance > amount) {
 					newBalance = (balance - amount);
 					status1 = true;
 				}else {
-					//throw new InsufficientFundsException("Insuficient funds."); 
+					 
 					System.out.println("Insufficient Funds");
-					break;
+					
 				}
-		
-				 
 			}
-			
 			if(approved && status1) {
-				//Log the transaction in the transaction log
+				
+				//Use Transaction log method here
+				
 				String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, account_origin, "
 					+ "transfer_target, account_target, amount, approved) "
 					+ "VALUES('withdrawl', ?, ?, 'external', 'external', ?, true)";
@@ -546,52 +386,139 @@ public class BankImp implements BankDAO {
 		return statusFinal;
 	}
 
-	@Override
-	public boolean closeAccount(User username) {
-		
-		boolean status = false;
-		
-		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
-			
-			String closeAccount = "DELETE FROM user_data WHERE pin = ?";
-			
-			PreparedStatement ps = connection.prepareStatement(closeAccount);
-			
-			ps.setString(1, username.getPin());
-			
-			ps.execute();		
-			
-			status = true;
-			
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return status;
-	}
-
-	@Override
-	public boolean approveUser(String pin) {
-		
-		boolean status = false;
-		
-		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
-			
-			String approveUser = "UPDATE user_data SET approved = true WHERE pin = ?";
-			
-			PreparedStatement ps = connection.prepareStatement(approveUser);
-			
-			ps.setString(1, pin);
-			
-			ps.execute();
-			
-			status = true;
-			
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return status;
-	}
+	
+	//move over to the userDAO
+	
+//	@Override
+//	public boolean addUser(User newUser) {
+//		// TODO Auto-generated method stub
+//		boolean status = false;
+//		
+//		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+//			
+//			String addUser = "INSERT INTO user_data(pin, username, pass, balance, account_type) VALUES(?, ?, ?, ?, ?)";
+//			
+//			PreparedStatement ps = connection.prepareStatement(addUser);
+//			
+//			ps.setString(1, newUser.getPin());
+//			ps.setString(2, newUser.getUser());
+//			ps.setString(3, newUser.getPass());
+//			ps.setInt(4, newUser.getBalance());
+//			ps.setString(5, newUser.getType());
+//			
+//			ps.execute();
+//			
+//			status = true;
+//			
+//		} catch(SQLException e) {
+//			e.printStackTrace();
+//		}
+//		
+//		return status;
+//	}
+//
+//	@Override
+//	public boolean openSavings(int openingBalance, String pin) {
+//		boolean status1 = false;
+//		
+//		boolean statusFinal = false;
+//		
+//		
+//		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+//			
+//			//Check if the user has an account already before they can make another
+//			
+//			String checkPin = "SELECT * FROM user_data WHERE pin = ?";
+//			
+//			PreparedStatement ps1 = connection.prepareStatement(checkPin);
+//			
+//			ps1.setString(1, pin);
+//			
+//			ResultSet rs = ps1.executeQuery();
+//			
+//			String username = null;
+//			String password = null;
+//			String account = null;
+//			boolean approved = false;
+//			
+//			while(rs.next()) {
+//				username = rs.getString("username");
+//				password = rs.getString("pass");
+//				account = rs.getString("account_type");
+//				approved = rs.getBoolean("approved");
+//			}
+//			
+//			if(approved) {
+//				
+//		
+//				String openAccount = "INSERT INTO user_data(pin, username, pass, balance, account_type) VALUES(?,?,?,?,'savings')";
+//				
+//				PreparedStatement ps2 = connection.prepareStatement(openAccount);
+//				
+//				ps2.setString(1, pin);
+//				ps2.setString(2, username);
+//				ps2.setString(3, password);
+//				ps2.setInt(4, openingBalance);
+//				
+//				ps2.execute();
+//				
+//
+//			}
+//
+//			
+//		} catch (SQLException e2) {
+//			// TODO Auto-generated catch block
+//			e2.printStackTrace();
+//		}
+//		return statusFinal;
+//	}
+//	
+//	@Override
+//	public boolean closeAccount(User username) {
+//		
+//		boolean status = false;
+//		
+//		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
+//			
+//			String closeAccount = "DELETE FROM user_data WHERE pin = ?";
+//			
+//			PreparedStatement ps = connection.prepareStatement(closeAccount);
+//			
+//			ps.setString(1, username.getPin());
+//			
+//			ps.execute();		
+//			
+//			status = true;
+//			
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return status;
+//	}
+//
+//	@Override
+//	public boolean approveUser(String pin) {
+//		
+//		boolean status = false;
+//		
+//		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
+//			
+//			String approveUser = "UPDATE user_data SET approved = true WHERE pin = ?";
+//			
+//			PreparedStatement ps = connection.prepareStatement(approveUser);
+//			
+//			ps.setString(1, pin);
+//			
+//			ps.execute();
+//			
+//			status = true;
+//			
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return status;
+//	}
 
 }
