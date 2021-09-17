@@ -3,9 +3,8 @@ package com.revature.repo;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import com.revature.classes.User;
+import com.revature.classes.TransactionObject;
 import com.revature.service.Service;
 
 public class BankImp implements BankDAO {
@@ -16,18 +15,16 @@ public class BankImp implements BankDAO {
 	String passwordServer = "Sixfourteen614";
 
 	@Override
-	public boolean withdraw(int amount, String pin, String accountOrigin) {
+	public boolean withdraw(int amount, String pin, String typeOrigin) {
 
-		Service check = new Service();
+		Service service = new Service();
 		boolean status1 = false;
-		boolean status2 = false;
-		boolean status3 = false;
-		boolean statusFinal = false;
+		boolean status2 = false;		
 		
 		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
 			
-			int balance = check.checkBalance(pin, accountOrigin);
-			boolean approved = check.checkAccountStatus(pin, accountOrigin);
+			int balance = service.checkBalance(pin, typeOrigin);
+			boolean approved = service.checkAccountStatus(pin, typeOrigin);
 			
 			int newBalance = 0;
 			
@@ -40,101 +37,61 @@ public class BankImp implements BankDAO {
 					System.out.println("Insufficient Funds");
 					
 				}
+			}else {
+				System.out.println("Account has not been approved.");
 			}
-			if(approved && status1) {
+			if(status1) {
 				
-				//Use Transaction log method here
-				
-				String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, account_origin, "
-					+ "transfer_target, account_target, amount, approved) "
-					+ "VALUES('withdrawl', ?, ?, 'external', 'external', ?, true)";
+				TransactionObject transaction = new TransactionObject("withdrawl", pin, typeOrigin, "external", "external", amount);
 			
-				PreparedStatement ps2 = connection.prepareStatement(inputQuery);
-			
-				ps2.setString(1, pin);
-				ps2.setString(2, accountOrigin);
-				ps2.setInt(3, amount);
-			
-			
-				ps2.execute();
-			
-				status2 = true;
+				status2 = service.logTransaction(transaction);
 				//Update the balance with new amount
 				String balanceUpdate = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
-			
+				
 				PreparedStatement ps3 = connection.prepareStatement(balanceUpdate);
 			
 				ps3.setInt(1, newBalance);
 				ps3.setString(2, pin);
-				ps3.setString(3, accountOrigin);
+				ps3.setString(3, typeOrigin);
 			
 				ps3.execute();
-			
-				status3 = true;
-			}else {
-				System.out.println("Account has not been approved.");
-			}
-			
-			
-			
-			
-			if(status1 && status2 && status3) {
-				statusFinal = true;
+
 			}
 			
 		} catch(SQLException e) {
 			e.printStackTrace();
 		}
 		
-		return statusFinal;
+		return status2;
 
 	}
 
 	@Override
-	public boolean deposit(int amount, String pin, String accountTarget) {
-		// TODO Auto-generated method stub
+	public boolean deposit(int amount, String pin, String typeTarget) {
+
+		Service service = new Service();
 		boolean status1 = false;
 		boolean status2 = false;
-		boolean status3 = false;
-		boolean statusFinal = false;
 		
 		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
 			
-			String balanceQuery = "SELECT balance, approved FROM user_data WHERE pin = ? AND account_type = ?";
-			
-			PreparedStatement ps1 = connection.prepareStatement(balanceQuery);
-
-			ps1.setString(1, pin);
-			ps1.setString(2, accountTarget);
-			
-			ResultSet rs = ps1.executeQuery();
-			
-			status1 = true;
-			
-			int balance = 0;
+			int balance = service.checkBalance(pin, typeTarget);
+			boolean approved = service.checkAccountStatus(pin, typeTarget);			
 			int newBalance = 0;
-			boolean approved = false;
-			
-			while(rs.next()) {
-				 balance = rs.getInt("balance");
-				 approved = rs.getBoolean("approved");
-				 newBalance = (balance + amount);
-			}
 			
 			if(approved) {
-				String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, account_origin, transfer_target, account_target, amount, approved) "
-					+ "VALUES('deposit', 'external', 'external', ?, ?, ?, true)";
+				newBalance = (balance + amount);	
 			
-				PreparedStatement ps2 = connection.prepareStatement(inputQuery);
+				status1 = true;
+			}else {
+				System.out.println("Account has not been approved.");
+			}
 			
-				ps2.setString(1, pin);
-				ps2.setString(2, accountTarget);
-				ps2.setInt(3, amount);
-			
-			
-				ps2.execute();
-			
-				status2 = true;
+			if(status1) {
+				
+				TransactionObject transaction = new TransactionObject("deposit", "external", "external", pin, typeTarget, amount);
+				
+				status2 = service.logTransaction(transaction);
 			
 				String balanceUpdate = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
 			
@@ -142,220 +99,132 @@ public class BankImp implements BankDAO {
 			
 				ps3.setInt(1, newBalance);
 				ps3.setString(2, pin);
-				ps3.setString(3, accountTarget);
+				ps3.setString(3, typeTarget);
 			
 				ps3.execute();
-			
-				status3 = true;
-			}else {
-				System.out.println("Account has not been approved.");
 			}
 			
-			
-			
-			if(status1 && status2 && status3) {
-				statusFinal = true;
-			}
 			
 		} catch(SQLException e) {
 			e.printStackTrace();
 		}
 		
-		return statusFinal;
+		return status2;
 	}
 	
 	@Override
-	public boolean internalTransfer(int amount, String pin, String accountOrigin, String accountTarget){
+	public boolean internalTransfer(int amount, String pin, String typeOrigin, String typeTarget){
 
+		Service service = new Service();
 		boolean status1 = false;
 		boolean status2 = false;
 		boolean status3 = false;
-		boolean statusFinal = false;
+		
 		
 		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
 			
-			String balanceQueryOrigin = "SELECT balance, approved FROM user_data WHERE pin = ? AND account_type = ?";
+			boolean originApproved = service.checkAccountStatus(pin, typeOrigin);
+			int originBalance = service.checkBalance(pin, typeOrigin);
+			boolean targetApproved = service.checkAccountStatus(pin, typeTarget);
+			int targetBalance = service.checkBalance(pin, typeTarget);
 			
-			PreparedStatement ps1 = connection.prepareStatement(balanceQueryOrigin);
-
-			ps1.setString(1, pin);
-			ps1.setString(2, accountOrigin);
-			
-			ResultSet rs1 = ps1.executeQuery();
-			
-			String balanceQueryTarget = "SELECT balance, approved FROM user_data WHERE pin = ? AND account_type = ?";
-			
-			PreparedStatement ps2 = connection.prepareStatement(balanceQueryTarget);
-
-			ps2.setString(1, pin);
-			ps2.setString(2, accountTarget);
-			
-			ResultSet rs2 = ps2.executeQuery();
-			
-			int balanceOrigin = 0;
-			int balanceTarget = 0;
 			int newBalanceOrigin = 0;
 			int newBalanceTarget = 0;
-			boolean originApproved = false;
-			boolean targetApproved = false;
-			
-			while(rs1.next()) {
 				
-				balanceOrigin = rs1.getInt("balance");
-				originApproved = rs1.getBoolean("approved");
-				
-					//throw new InsufficientFundsException("Insufficient Funds.");
-			}
-			while(rs2.next()) {
-				 balanceTarget = rs2.getInt("balance");
-				 targetApproved = rs2.getBoolean("approved");
-			}
-			
 			if(originApproved && targetApproved) {
-				if(balanceOrigin >= amount) {
-					newBalanceOrigin = balanceOrigin - amount;
-					newBalanceTarget = balanceTarget + amount;
+				if(originBalance >= amount) {
+					newBalanceOrigin = originBalance - amount;
+					newBalanceTarget = targetBalance + amount;
+					status1 = true;
 				}else {
 						System.out.println("Insufficient funds.");
 				}
-				
-				
-				status1 = true;
-				
-				String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, "
-						+ "account_origin, transfer_target, account_target, amount, approved) "
-						+ "VALUES('internal transfer', ?, ?, ?, ?, ?, false)";
-				
-				PreparedStatement ps3 = connection.prepareStatement(inputQuery);
-				
-				ps3.setString(1, pin);
-				ps3.setString(2, accountOrigin);
-				ps3.setString(3, pin);
-				ps3.setString(4, accountTarget);
-				ps3.setInt(5, amount);
-				
-				ps3.execute();
-				
 				status2 = true;
-				
-				String balanceUpdateOrigin = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
-				
-				PreparedStatement ps4 = connection.prepareStatement(balanceUpdateOrigin);
-				
-				ps4.setInt(1, newBalanceOrigin);
-				ps4.setString(2, pin);
-				ps4.setString(3, accountOrigin);
-				
-				ps4.execute();
-				
-				String balanceUpdateTarget = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
-				
-				PreparedStatement ps5 = connection.prepareStatement(balanceUpdateTarget);
-				
-				ps5.setInt(1, newBalanceTarget);
-				ps5.setString(2, pin);
-				ps5.setString(3, accountTarget);
-				
-				ps5.execute();
-				
-				status3 = true;
 			}else {
 				System.out.println("Account has not been approved.");
+				
+				
+				
+				if(status1 && status2) {
+					
+					TransactionObject transaction = new TransactionObject("internal transfer", pin, typeOrigin, "internal", typeTarget, amount);
+					status3 = service.logTransaction(transaction);
+				
+					String balanceUpdateOrigin = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
+					
+					PreparedStatement ps4 = connection.prepareStatement(balanceUpdateOrigin);
+					
+					ps4.setInt(1, newBalanceOrigin);
+					ps4.setString(2, pin);
+					ps4.setString(3, typeOrigin);
+					
+					ps4.execute();
+					
+					String balanceUpdateTarget = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
+					
+					PreparedStatement ps5 = connection.prepareStatement(balanceUpdateTarget);
+					
+					ps5.setInt(1, newBalanceTarget);
+					ps5.setString(2, pin);
+					ps5.setString(3, typeTarget);
+					
+					ps5.execute();
+					
+				}
 			}
 			
-			
-			if(status1 && status2 && status3) {
-				statusFinal = true;
-			}
+
 			
 		} catch(SQLException e) {
 			e.printStackTrace();
 		}
 		
-		return statusFinal;
+		return status3;
 	}
 
 	@Override
-	public boolean externalTransfer(int amount, String pinOrigin, String accountOrigin, String pinTarget, String accountTarget) {
+	public boolean externalTransfer(int amount, String pinOrigin, String typeOrigin, String pinTarget, String typeTarget) {
 		
+		Service service = new Service();
 		boolean status1 = false;
 		boolean status2 = false;
 		boolean status3 = false;
-		boolean statusFinal = false;
 		
 		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
 			
-			String balanceQueryOrigin = "SELECT balance, approved FROM user_data WHERE pin = ? AND account_type = ?";
-			
-			PreparedStatement ps1 = connection.prepareStatement(balanceQueryOrigin);
-
-			ps1.setString(1, pinOrigin);
-			ps1.setString(2, accountOrigin);
-			
-			ResultSet rs1 = ps1.executeQuery();
-			
-			String balanceQueryTarget = "SELECT balance, approved FROM user_data WHERE pin = ? AND account_type = ?";
-			
-			PreparedStatement ps2 = connection.prepareStatement(balanceQueryTarget);
-
-			ps2.setString(1, pinTarget);
-			ps2.setString(2, accountTarget);
-			
-			ResultSet rs2 = ps2.executeQuery();
-			
-			int balanceOrigin = 0;
-			int balanceTarget = 0;
+			boolean originApproved = service.checkAccountStatus(pinOrigin, typeOrigin);
+			int originBalance = service.checkBalance(pinOrigin, typeOrigin);
+			boolean targetApproved = service.checkAccountStatus(pinTarget, typeTarget);
+			int targetBalance = service.checkBalance(pinTarget, typeTarget);
+		
 			int newBalanceOrigin = 0;
 			int newBalanceTarget = 0;
-			boolean originApproved = false;
-			boolean targetApproved = false;
-			
-			while(rs1.next()) {
-				
-				balanceOrigin = rs1.getInt("balance");
-				originApproved = rs1.getBoolean("approved");
-				
-					//throw new InsufficientFundsException("Insufficient Funds.");
-			}
-			while(rs2.next()) {
-				 balanceTarget = rs2.getInt("balance");
-				 targetApproved = rs2.getBoolean("approved");
-			}
 			
 			if(originApproved && targetApproved) {
-				if(balanceOrigin >= amount) {
-					newBalanceOrigin = balanceOrigin - amount;
-					newBalanceTarget = balanceTarget + amount;
+				if(originBalance >= amount) {
+					newBalanceOrigin = originBalance - amount;
+					newBalanceTarget = targetBalance + amount;
+					status1 = true;
 				}else {
 						System.out.println("Insufficient funds.");
 				}
-				
-				
-				status1 = true;
-				
-				String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, "
-						+ "account_origin, transfer_target, account_target, amount, approved) "
-						+ "VALUES('external transfer', ?, ?, ?, ?, ?, false)";
-				
-				PreparedStatement ps3 = connection.prepareStatement(inputQuery);
-				
-				ps3.setString(1, pinOrigin);
-				ps3.setString(2, accountOrigin);
-				ps3.setString(3, pinTarget);
-				ps3.setString(4, accountTarget);
-				ps3.setInt(5, amount);
-				
-				ps3.execute();
-				
 				status2 = true;
+			}else {
+				System.out.println("Account has not been approved.");
+			}	
 				
+			if(status1 && status2) {	
+				
+				TransactionObject transaction = new TransactionObject("external transfer", pinOrigin, typeOrigin, pinTarget, typeTarget, amount);
+				status3 = service.logTransaction(transaction);
+			
 				String balanceUpdateOrigin = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
 				
 				PreparedStatement ps4 = connection.prepareStatement(balanceUpdateOrigin);
 				
 				ps4.setInt(1, newBalanceOrigin);
 				ps4.setString(2, pinOrigin);
-				ps4.setString(3, accountOrigin);
+				ps4.setString(3, typeOrigin);
 				
 				ps4.execute();
 				
@@ -365,25 +234,16 @@ public class BankImp implements BankDAO {
 				
 				ps5.setInt(1, newBalanceTarget);
 				ps5.setString(2, pinTarget);
-				ps5.setString(3, accountTarget);
+				ps5.setString(3, typeTarget);
 				
 				ps5.execute();
-				
-				status3 = true;
-			}else {
-				System.out.println("Account has not been approved.");
+	
 			}
-			
-			
-			if(status1 && status2 && status3) {
-				statusFinal = true;
-			}
-			
 		} catch(SQLException e) {
 			e.printStackTrace();
 		}
 		
-		return statusFinal;
+		return status3;
 	}
 
 	

@@ -76,8 +76,34 @@ public class Service implements BankService{
 	
 	@Override
 	public boolean logTransaction(TransactionObject transaction) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		boolean status = false;
+		
+		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+		
+		
+			String inputQuery = "INSERT INTO transaction_log(transaction_type, transfer_origin, type_origin, "
+				+ "transfer_target, type_target, amount, approved) "
+				+ "VALUES(?, ?, ?, ?, ?, ?, true)";
+		
+			PreparedStatement ps2 = connection.prepareStatement(inputQuery);
+		
+			ps2.setString(1, transaction.getTransactionType());
+			ps2.setString(2, transaction.getPinOrigin());
+			ps2.setString(3, transaction.getTypeOrigin());
+			ps2.setString(4, transaction.getPinTarget());
+			ps2.setString(5, transaction.getTypeTarget());
+			ps2.setInt(6, transaction.getAmount());
+		
+			ps2.execute();
+			
+			status = true;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return status;
 	}
 	
 	@Override
