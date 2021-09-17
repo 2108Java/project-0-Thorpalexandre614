@@ -12,12 +12,12 @@ create table user_data(
 create table transaction_log(
 
 	transaction_id serial primary key,
-	transaction_type varchar(10) not null,
+	transaction_type varchar(20) not null,
 	--transfer origin and target are the pins and account origin and target are the account types
 	transfer_origin varchar(10),
-	account_origin varchar(10),
+	type_origin varchar(10),
 	transfer_target varchar(10),
-	account_target varchar(10),
+	type_target varchar(10),
 	--if the transaction is withdrawl or deposit, then origin and target are the same pin
 	amount int not null,
 	approved bool default false 

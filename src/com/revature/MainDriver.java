@@ -1,8 +1,10 @@
 package com.revature;
 
+import com.revature.classes.TransactionObject;
 import com.revature.classes.User;
 import com.revature.repo.BankImp;
-import com.revature.repo.InsufficientFundsException;
+import com.revature.repo.UserImp;
+import com.revature.service.Service;
 
 public class MainDriver {
 	
@@ -15,10 +17,19 @@ public class MainDriver {
 		alex.setBalance(100);
 		alex.setType("checking");
 		
+		UserImp ui = new UserImp();
 		BankImp bi = new BankImp();
-//		bi.addUser(alex);
-//		bi.approveUser("6141");
-//		bi.deposit(100, "6141", "checking");
+		Service service = new Service();
+		
+		TransactionObject transaction = new TransactionObject("deposit", "external", "external", "1234", "checking", 100);
+		
+//		System.out.println(transaction.getAmount());
+		
+//		service.logTransaction(transaction);
+		
+//		ui.addUser(alex);
+//		ui.approveUser("6141");
+		bi.withdraw(100, "6141", "checking");
 //		bi.approveUser("1111");
 //		bi.externalTransfer(50, "6141", "checking", "1111", "checking");
 //		bi.openSavings(100, "6141");
@@ -48,7 +59,8 @@ public class MainDriver {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-		bi.closeAccount(rando);
+		
+//		service.retrieveLog();
 		
 	}
 

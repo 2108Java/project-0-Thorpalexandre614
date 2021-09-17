@@ -107,9 +107,26 @@ public class Service implements BankService{
 	}
 	
 	@Override
-	public String retrieveLog(int transactionId) {
-		// TODO Auto-generated method stub
-		return null;
+	public void retrieveLog() {
+		
+		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+			
+			String inputQuery = "SELECT * FROM transaction_log";
+			
+			PreparedStatement ps = connection.prepareStatement(inputQuery); 
+			
+			ResultSet rs = ps.executeQuery();
+			
+			while(rs.next()) {
+				System.out.println(rs.getInt("transaction_id") + " " + rs.getString("transaction_type") + " " + rs.getString("transfer_origin") 
+				+ " " + rs.getString("type_origin") + " " + rs.getString("transfer_target") + " " + rs.getString("type_target") 
+				+ " " + rs.getInt("amount") + " " + rs.getBoolean("approved"));
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -117,6 +134,8 @@ public class Service implements BankService{
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	
 
 	
 	

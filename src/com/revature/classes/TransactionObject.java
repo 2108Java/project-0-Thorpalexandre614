@@ -14,7 +14,12 @@ public class TransactionObject {
 	}
 	
 	public TransactionObject(String transactionType, String pinOrigin, String typeOrigin, String pinTarget, String typeTarget, int amount) {
-		
+		this.transactionType = transactionType;
+		this.pinOrigin = pinOrigin;
+		this.typeOrigin = typeOrigin;
+		this.pinTarget = pinTarget;
+		this.typeTarget = typeTarget;
+		this.amount = amount;
 	}
 	
 	//Getters
