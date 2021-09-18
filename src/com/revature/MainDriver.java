@@ -29,10 +29,10 @@ public class MainDriver {
 		
 //		ui.addUser(alex);
 //		ui.approveUser("6141");
-		bi.withdraw(100, "6141", "checking");
+//		bi.withdraw(100, "6141", "checking");
 //		bi.approveUser("1111");
 //		bi.externalTransfer(50, "6141", "checking", "1111", "checking");
-//		bi.openSavings(100, "6141");
+		ui.openSavings(100, "6141");
 //		try {
 //			bi.withdraw(50, alex.getPin(), "savings");
 //		} catch (InsufficientFundsException e) {
@@ -51,7 +51,7 @@ public class MainDriver {
 //		BankImp bi2 = new BankImp();
 //		bi2.addUser(rando);
 		
-//		bi.deposit(100, "6141", "checking");
+		bi.deposit(100, "6141", "checking");
 //		
 //		try {
 //			bi2.externalTransfer(100, "6141", "checking", "1111", "checking");
@@ -60,7 +60,7 @@ public class MainDriver {
 //			e.printStackTrace();
 //		}
 		
-//		service.retrieveLog();
+		service.retrieveAccountInfo("6141");
 		
 	}
 

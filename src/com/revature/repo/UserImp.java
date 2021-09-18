@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.revature.classes.Customer;
+import com.revature.classes.Employee;
 import com.revature.classes.User;
 
 public class UserImp implements UserDAO {
@@ -16,7 +18,7 @@ public class UserImp implements UserDAO {
 	String passwordServer = "Sixfourteen614";
 
 	@Override
-	public boolean addUser(User newUser) {
+	public boolean addUser(Customer newUser) {
 		
 		boolean status = false;
 		
@@ -45,14 +47,10 @@ public class UserImp implements UserDAO {
 
 	@Override
 	public boolean openSavings(int openingBalance, String pin) {
-		boolean status1 = false;
 		
-		boolean statusFinal = false;
-		
+		boolean status1 = false;		
 		
 		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
-			
-			//Check if the user has an account already before they can make another
 			
 			String checkPin = "SELECT * FROM user_data WHERE pin = ?";
 			
@@ -64,7 +62,7 @@ public class UserImp implements UserDAO {
 			
 			String username = null;
 			String password = null;
-			String account = null;
+			String account;
 			boolean approved = false;
 			
 			while(rs.next()) {
@@ -100,7 +98,7 @@ public class UserImp implements UserDAO {
 	}
 
 	@Override
-	public boolean closeAccount(User username) {
+	public boolean closeAccount(Customer username) {
 
 		boolean status = false;
 		
@@ -124,29 +122,71 @@ public class UserImp implements UserDAO {
 	}
 
 	@Override
-	public boolean changeUsername(String username) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean changePassword(String password) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean approveUser(String pin) {
+	public boolean changeUsername(String newUsername, String pin) {
 		
+		boolean status = false;
+		
+		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+			
+			String checkPin = "UPDATE user_data SET username = ? WHERE pin = ?";
+			
+			PreparedStatement ps = connection.prepareStatement(checkPin);
+			
+			ps.setString(1, newUsername);
+			ps.setString(2, pin);
+			
+			ps.execute();
+			
+			status = true;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return status;
+		
+	}
+
+	@Override
+	public boolean changePassword(String newPassword, String pin) {
+
+		boolean status = false;
+		
+		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+			
+			String checkPin = "UPDATE user_data SET pass = ? WHERE pin = ?";
+			
+			PreparedStatement ps = connection.prepareStatement(checkPin);
+			
+			ps.setString(1, newPassword);
+			ps.setString(2, pin);
+			
+			ps.execute();
+			
+			status = true;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return status;
+		
+	}
+
+	@Override
+	public boolean makeEmployee(Employee employee) {
+
 		boolean status = false;
 		
 		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
 			
-			String approveUser = "UPDATE user_data SET approved = true WHERE pin = ?";
+			String approveUser = "INSTERT INTO user_data(pin, username, pass, account_type, approved) VALUES(?, ?, ?, 'employee', true)";
 			
 			PreparedStatement ps = connection.prepareStatement(approveUser);
 			
-			ps.setString(1, pin);
+			ps.setString(1, employee.getPin());
+			ps.setString(2, employee.getUser());
+			ps.setString(3, employee.getPass());
 			
 			ps.execute();
 			
@@ -157,12 +197,6 @@ public class UserImp implements UserDAO {
 			e.printStackTrace();
 		}
 		return status;
-	}
-
-	@Override
-	public boolean makeEmployee(String username) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 }

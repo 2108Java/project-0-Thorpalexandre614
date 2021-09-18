@@ -1,6 +1,6 @@
 package com.revature.classes;
 
-public class User {
+public abstract class User {
 	
 	private String pin;
 	private String username;
@@ -16,6 +16,7 @@ public class User {
 		this.username = username;
 		this.password = password;
 		this.accountType = type;
+		this.balance = 0;
 		this.pin = pin;
 	}
 	
@@ -34,9 +35,7 @@ public class User {
 		return this.password;
 	}
 	
-	public int getBalance() {
-		return this.balance;
-	}
+	public abstract int getBalance();
 	
 	public String getType() {
 		return this.accountType;
@@ -56,10 +55,8 @@ public class User {
 		this.password = password;
 	}
 	
-	public void setBalance(int balance) {
-		this.balance = balance;
-	}
-	
+	public abstract void setBalance(int amount);
+
 	public void setType(String accountType) {
 		this.accountType = accountType;
 	}

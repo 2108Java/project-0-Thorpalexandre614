@@ -130,9 +130,26 @@ public class Service implements BankService{
 	}
 
 	@Override
-	public String retrieveAccountInfo(String pin) {
-		// TODO Auto-generated method stub
-		return null;
+	public void retrieveAccountInfo(String pin) {
+		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+			
+			String inputQuery = "SELECT * FROM user_data WHERE pin = ?";
+			
+			PreparedStatement ps = connection.prepareStatement(inputQuery); 
+			
+			ps.setString(1, pin);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			while(rs.next()) {
+				System.out.println(rs.getInt("pin") + " " + rs.getString("username") + " " + rs.getString("pass") 
+				+ " " + rs.getString("balance") + " " + rs.getString("account_type") + " " + rs.getBoolean("approved"));
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	

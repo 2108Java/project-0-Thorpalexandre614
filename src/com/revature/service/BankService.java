@@ -8,6 +8,6 @@ public interface BankService {
 	public int checkBalance(String pin, String typeTarget);
 	public boolean logTransaction(TransactionObject transaction);
 	public void retrieveLog();
-	public String retrieveAccountInfo(String pin);	
+	public void retrieveAccountInfo(String pin);	
 
 }
