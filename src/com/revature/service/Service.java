@@ -131,6 +131,7 @@ public class Service implements BankService{
 
 	@Override
 	public void retrieveAccountInfo(String pin) {
+		
 		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
 			
 			String inputQuery = "SELECT * FROM user_data WHERE pin = ?";
@@ -154,20 +155,107 @@ public class Service implements BankService{
 
 	@Override
 	public boolean validate(String username) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		boolean status = false;
+		
+		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+			
+			String inputQuery = "SELECT username FROM user_data";
+			
+			PreparedStatement ps = connection.prepareStatement(inputQuery); 
+			
+			ResultSet rs = ps.executeQuery();
+			
+			while(rs.next()) {
+				
+				if(rs.getString("username") == username) {
+					status = true;
+					break;
+				} else {
+					continue;
+				}
+				
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return status;
 	}
 
 	@Override
 	public boolean login(String username, String password) {
-		// TODO Auto-generated method stub
-		return false;
+
+		Service service = new Service();
+		
+		boolean status1 = service.validate(username);
+		
+		boolean status2 = false;
+		
+		if(status1) {
+			
+			try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+				
+				String inputQuery = "SELECT password FROM user_data WHERE username = ?";
+				
+				PreparedStatement ps = connection.prepareStatement(inputQuery); 
+				
+				ps.setString(1, username);
+				
+				ResultSet rs = ps.executeQuery();
+				
+				while(rs.next()) {
+					
+					if(rs.getString("password") == password) {
+						status2 = true;
+						break;
+					} else {
+						System.out.println("Incorrect password");
+					}
+					
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		} else {
+			System.out.println("Account does not exist");
+		}
+		
+		return status2;
 	}
 
 	@Override
-	public boolean authenticatePIN(int pin) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean authenticatePIN(String pin) {
+		
+		boolean status = false;
+		
+		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+			
+			String inputQuery = "SELECT pin FROM user_data";
+			
+			PreparedStatement ps = connection.prepareStatement(inputQuery); 
+			
+			ResultSet rs = ps.executeQuery();
+			
+			while(rs.next()) {
+				
+				if(rs.getString("pin") == pin) {
+					
+					status = true;
+					break;
+					
+				} else {
+					continue;
+				}
+				
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return status;
 	}
 	
 	

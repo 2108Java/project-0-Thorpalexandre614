@@ -12,5 +12,6 @@ public interface UserDAO {
 	public boolean changeUsername(String newUsername, String pin);
 	public boolean changePassword(String newPassword, String pin);
 	public boolean makeEmployee(Employee employee);
+	public boolean approveUser(String pin);
 
 }

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import com.revature.classes.Customer;
 import com.revature.classes.Employee;
 import com.revature.classes.User;
+import com.revature.service.Service;
 
 public class UserImp implements UserDAO {
 	
@@ -20,9 +21,15 @@ public class UserImp implements UserDAO {
 	@Override
 	public boolean addUser(Customer newUser) {
 		
-		boolean status = false;
+		Service service = new Service();
 		
-		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
+		boolean status1 = service.authenticatePIN(newUser.getPin());
+		boolean status2 = service.validate(newUser.getUser());
+		boolean status3 = false;
+		
+		if(status1 && status2) {
+			
+			try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
 			
 			String addUser = "INSERT INTO user_data(pin, username, pass, balance, account_type) VALUES(?, ?, ?, ?, ?)";
 			
@@ -36,13 +43,16 @@ public class UserImp implements UserDAO {
 			
 			ps.execute();
 			
-			status = true;
+			status3 = true;
 			
-		} catch(SQLException e) {
-			e.printStackTrace();
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+		} else {
+			System.out.println("Username and/or pin already exists");
 		}
 		
-		return status;
+		return status3;
 	}
 
 	@Override
@@ -187,6 +197,30 @@ public class UserImp implements UserDAO {
 			ps.setString(1, employee.getPin());
 			ps.setString(2, employee.getUser());
 			ps.setString(3, employee.getPass());
+			
+			ps.execute();
+			
+			status = true;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return status;
+	}
+
+	@Override
+	public boolean approveUser(String pin) {
+
+		boolean status = false;
+		
+		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
+			
+			String approveUser = "UPDATE user_data SET approved = true WHERE pin = ?";
+			
+			PreparedStatement ps = connection.prepareStatement(approveUser);
+			
+			ps.setString(1, pin);
 			
 			ps.execute();
 			
