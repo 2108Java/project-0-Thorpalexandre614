@@ -151,6 +151,24 @@ public class Service implements BankService{
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public boolean validate(String username) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean login(String username, String password) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean authenticatePIN(int pin) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 	
 
