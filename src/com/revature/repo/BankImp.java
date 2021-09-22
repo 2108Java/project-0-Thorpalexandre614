@@ -38,9 +38,8 @@ public class BankImp implements BankDAO {
 					System.out.println("Insufficient Funds");
 					
 				}
-			}else {
-				System.out.println("Account has not been approved.");
 			}
+			
 			if(status1) {
 				
 				TransactionObject transaction = new TransactionObject("withdrawl", pin, typeOrigin, "external", "external", amount);
@@ -143,35 +142,37 @@ public class BankImp implements BankDAO {
 				status2 = true;
 			}else {
 				System.out.println("Account has not been approved.");
+			}	
 				
 				
+			if(status2) {
+					
+				TransactionObject transaction = new TransactionObject("internal transfer", pin, typeOrigin, "internal", typeTarget, amount);
+				service.logTransaction(transaction);
 				
-				if(status1 && status2) {
+				String balanceUpdateOrigin = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
 					
-					TransactionObject transaction = new TransactionObject("internal transfer", pin, typeOrigin, "internal", typeTarget, amount);
-					status3 = service.logTransaction(transaction);
+				PreparedStatement ps4 = connection.prepareStatement(balanceUpdateOrigin);
+					
+				ps4.setInt(1, newBalanceOrigin);
+				ps4.setString(2, pin);
+				ps4.setString(3, typeOrigin);
+					
+				ps4.execute();
+					
+				String balanceUpdateTarget = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
+					
+				PreparedStatement ps5 = connection.prepareStatement(balanceUpdateTarget);
+					
+				ps5.setInt(1, newBalanceTarget);
+				ps5.setString(2, pin);
+				ps5.setString(3, typeTarget);
+					
+				ps5.execute();
+					
+				status3 = true;
+					
 				
-					String balanceUpdateOrigin = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
-					
-					PreparedStatement ps4 = connection.prepareStatement(balanceUpdateOrigin);
-					
-					ps4.setInt(1, newBalanceOrigin);
-					ps4.setString(2, pin);
-					ps4.setString(3, typeOrigin);
-					
-					ps4.execute();
-					
-					String balanceUpdateTarget = "UPDATE user_data SET balance = ? WHERE pin = ? AND account_type = ? ";
-					
-					PreparedStatement ps5 = connection.prepareStatement(balanceUpdateTarget);
-					
-					ps5.setInt(1, newBalanceTarget);
-					ps5.setString(2, pin);
-					ps5.setString(3, typeTarget);
-					
-					ps5.execute();
-					
-				}
 			}
 			
 

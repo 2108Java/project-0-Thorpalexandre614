@@ -114,7 +114,7 @@ public class UserImp implements UserDAO {
 		
 		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
 			
-			String closeAccount = "DELETE FROM user_data WHERE pin = ?, account_type = ?";
+			String closeAccount = "DELETE FROM user_data WHERE pin = ? AND account_type = ?";
 			
 			PreparedStatement ps = connection.prepareStatement(closeAccount);
 			

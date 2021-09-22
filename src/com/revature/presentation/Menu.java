@@ -98,7 +98,9 @@ public class Menu {
 						System.out.println("Account type");
 						String typeTargetCb = scanner.nextLine();
 						
-						service.checkBalance(pinCb, typeTargetCb);
+						System.out.println(service.checkBalance(pinCb, typeTargetCb));
+						
+						customerMenu();
 						
 						break;
 					
@@ -107,11 +109,11 @@ public class Menu {
 						System.out.println("Input your pin");
 						String pinWithdraw = scanner.nextLine();
 						
-						System.out.println("Input amount");
-						int amountWithdraw = scanner.nextInt();
-						
 						System.out.println("Input account type");
 						String typeOriginWithdraw = scanner.nextLine();
+						
+						System.out.println("Input amount");
+						int amountWithdraw = scanner.nextInt();
 						
 						boolean statusWithdraw = bi.withdraw(amountWithdraw, pinWithdraw, typeOriginWithdraw);
 						
@@ -130,11 +132,11 @@ public class Menu {
 						System.out.println("Input your pin");
 						String pinDeposit = scanner.nextLine();
 						
-						System.out.println("Input amount");
-						int amountDeposit = scanner.nextInt();
-						
 						System.out.println("Input account type");
 						String typeTargetDeposit = scanner.nextLine();
+						
+						System.out.println("Input amount");
+						int amountDeposit = scanner.nextInt();
 						
 						boolean statusDeposit = bi.deposit(amountDeposit, pinDeposit, typeTargetDeposit);
 						
@@ -152,15 +154,15 @@ public class Menu {
 						
 						System.out.println("Input your pin");
 						String pinIt = scanner.nextLine();
-						
-						System.out.println("Input amount");
-						int amountIt = scanner.nextInt();
-						
+					
 						System.out.println("Input account type to transfer from");
 						String typeOriginIt = scanner.nextLine();
 						
 						System.out.println("Input account type to transfer to");
 						String typeTargetIt = scanner.nextLine();
+						
+						System.out.println("Input amount");
+						int amountIt = scanner.nextInt();
 						
 						boolean statusIt = bi.internalTransfer(amountIt, pinIt, typeOriginIt, typeTargetIt);
 						
@@ -178,10 +180,7 @@ public class Menu {
 						
 						System.out.println("Input your pin");
 						String pinEt = scanner.nextLine();
-						
-						System.out.println("Input amount");
-						int amountEt = scanner.nextInt();
-				
+		
 						System.out.println("Input the username of the account to be transfered into");
 						String usernameTargetEt = scanner.nextLine();
 						
@@ -190,6 +189,9 @@ public class Menu {
 						
 						System.out.println("Input account type to transfer to");
 						String typeTargetEt = scanner.nextLine();
+						
+						System.out.println("Input amount");
+						int amountEt = scanner.nextInt();
 						
 						boolean status = bi.externalTransfer(amountEt, pinEt, typeOriginEt, usernameTargetEt, typeTargetEt);
 						
@@ -252,6 +254,7 @@ public class Menu {
 							
 							ui.closeAccount(customer);
 							
+							mainMenu();
 							loggedIn = false;
 						} else {
 							System.out.println("Account closure cancelled");
@@ -354,6 +357,8 @@ public class Menu {
 						
 						service.retrieveAccountInfo(pinCustomerRai);
 						
+						employeeMenu();
+						
 						break;
 						
 					case "2":
@@ -400,13 +405,18 @@ public class Menu {
 			
 			while(!status1) {
 				
-				System.out.println("Choose a pin");
+				System.out.println("Choose a 4 digit pin");
 				newPin = scanner.nextLine();
-				if(service.authenticatePIN(newPin)) {
-					System.out.println("Pin already in use");
+				if(newPin.length()<4) {
+					System.out.println("Invalid pin");
 				} else {
-					status1 = true;
+					if(service.authenticatePIN(newPin)) {
+						System.out.println("Pin already in use");
+					} else {
+						status1 = true;
+					}
 				}
+				
 				
 			}
 			

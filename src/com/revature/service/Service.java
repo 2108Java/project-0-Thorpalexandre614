@@ -50,6 +50,7 @@ public class Service implements BankService{
 		try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
 			
 			if(approved.checkAccountStatus(pin, accountTarget)) {
+				
 				String checkBalance = "SELECT balance FROM user_data WHERE pin = ? AND account_type = ?";
 			
 				PreparedStatement ps = connection.prepareStatement(checkBalance);
