@@ -168,7 +168,7 @@ public class Service implements BankService{
 			
 			while(rs.next()) {
 				
-				if(rs.getString("username") == username) {
+				if(rs.getString("username").equals(username)) {
 					status = true;
 					break;
 				} else {
@@ -196,7 +196,7 @@ public class Service implements BankService{
 			
 			try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
 				
-				String inputQuery = "SELECT password FROM user_data WHERE username = ?";
+				String inputQuery = "SELECT pass FROM user_data WHERE username = ?";
 				
 				PreparedStatement ps = connection.prepareStatement(inputQuery); 
 				
@@ -206,7 +206,7 @@ public class Service implements BankService{
 				
 				while(rs.next()) {
 					
-					if(rs.getString("password") == password) {
+					if(rs.getString("pass").equals(password)) {
 						status2 = true;
 						break;
 					} else {
@@ -241,7 +241,7 @@ public class Service implements BankService{
 			
 			while(rs.next()) {
 				
-				if(rs.getString("pin") == pin) {
+				if(rs.getString("pin").equals(pin)) {
 					
 					status = true;
 					break;

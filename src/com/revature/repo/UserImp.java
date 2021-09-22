@@ -27,7 +27,7 @@ public class UserImp implements UserDAO {
 		boolean status2 = service.validate(newUser.getUser());
 		boolean status3 = false;
 		
-		if(status1 && status2) {
+		if(!status1 && !status2) {
 			
 			try(Connection connection = DriverManager.getConnection(url,usernameServer,passwordServer)){
 			
@@ -114,11 +114,12 @@ public class UserImp implements UserDAO {
 		
 		try(Connection connection = DriverManager.getConnection(url, usernameServer, passwordServer)){
 			
-			String closeAccount = "DELETE FROM user_data WHERE pin = ?";
+			String closeAccount = "DELETE FROM user_data WHERE pin = ?, account_type = ?";
 			
 			PreparedStatement ps = connection.prepareStatement(closeAccount);
 			
 			ps.setString(1, username.getPin());
+			ps.setString(2, username.getType());
 			
 			ps.execute();		
 			
